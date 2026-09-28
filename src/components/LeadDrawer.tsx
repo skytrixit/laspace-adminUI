@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react'
 
-import { LEAD_STATUSES, type Lead } from '../data/types'
+import { SOURCE_LABEL, type Enquiry } from '../data/types'
 import { dial } from '../lib/asset'
+import { deleteEnquiry, setEnquiryHandled } from '../lib/enquiriesApi'
+import { formatDateTime, timeAgo } from '../lib/time'
 import { useStudio } from '../store/studio'
 import ui from '../styles/ui.module.css'
 import css from './LeadDrawer.module.css'
 
-export default function LeadDrawer({ lead, onClose }: { lead: Lead; onClose: () => void }) {
-  const { setLeadStatus, saveLeadNote } = useStudio()
-  const [note, setNote] = useState(lead.note)
+type Props = {
+  enquiry: Enquiry
+  onClose: () => void
+  /** The row as the API returned it after a change, so the list stays in step. */
+  onChange: (updated: Enquiry) => void
+  onDeleted: (id: number) => void
+}
 
-  /* Re-seed the textarea when the drawer is pointed at a different lead. */
-  useEffect(() => setNote(lead.note), [lead.id, lead.note])
+export default function LeadDrawer({ enquiry, onClose, onChange, onDeleted }: Props) {
+  const { notify, refreshEnquiries } = useStudio()
+  const [busy, setBusy] = useState(false)
+  const [armed, setArmed] = useState(false)
 
   /* Escape closes, and the page behind the scrim stops scrolling. */
   useEffect(() => {
@@ -27,17 +35,51 @@ export default function LeadDrawer({ lead, onClose }: { lead: Lead; onClose: () 
     }
   }, [onClose])
 
+  /* A new enquiry in the same drawer disarms the delete. */
+  useEffect(() => setArmed(false), [enquiry.id])
+
+  const toggleHandled = async () => {
+    setBusy(true)
+    try {
+      onChange(await setEnquiryHandled(enquiry.id, !enquiry.isHandled))
+      notify(enquiry.isHandled ? 'Marked as new' : 'Marked as handled')
+      void refreshEnquiries()
+    } catch {
+      notify('Could not update')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  /* Two clicks to delete: the first arms the button, the second commits. */
+  const remove = async () => {
+    if (!armed) {
+      setArmed(true)
+      return
+    }
+    setBusy(true)
+    try {
+      await deleteEnquiry(enquiry.id)
+      notify('Enquiry removed')
+      void refreshEnquiries()
+      onDeleted(enquiry.id)
+    } catch {
+      notify('Could not remove')
+      setBusy(false)
+    }
+  }
+
   const fields: [string, string][] = [
-    ['Phone', lead.phone],
-    ['Service', lead.service],
-    ['Scope', lead.area],
-    ['Budget', lead.budget],
-    ['Status', lead.status],
-    ['Message', lead.msg],
+    ['Phone', enquiry.phone],
+    ['Email', enquiry.email ?? '—'],
+    ['Service', enquiry.serviceLabel],
+    ['Budget', enquiry.budgetLabel ?? '—'],
+    ['Received', formatDateTime(enquiry.submittedAt)],
+    ['Message', enquiry.message ?? '—'],
   ]
 
   return (
-    <div className={css.overlay} role="dialog" aria-modal="true" aria-label={lead.name}>
+    <div className={css.overlay} role="dialog" aria-modal="true" aria-label={enquiry.name}>
       <div className={css.scrim} onClick={onClose} />
 
       <div className={css.panel}>
@@ -45,19 +87,19 @@ export default function LeadDrawer({ lead, onClose }: { lead: Lead; onClose: () 
           ✕
         </button>
 
-        <div className={ui.eyebrow}>Enquiry · {lead.ago}</div>
-        <h2 className={css.name}>{lead.name}</h2>
+        <div className={ui.eyebrow}>Enquiry · {timeAgo(enquiry.submittedAt)}</div>
+        <h2 className={css.name}>{enquiry.name}</h2>
         <div className={css.where}>
-          {lead.city} · via {lead.source}
+          {SOURCE_LABEL[enquiry.source]} · {enquiry.referenceCode}
         </div>
 
         <div className={css.contact}>
-          <a className={css.call} href={`tel:${dial(lead.phone)}`}>
+          <a className={css.call} href={`tel:${dial(enquiry.phone)}`}>
             Call
           </a>
           <a
             className={css.whatsapp}
-            href={`https://wa.me/${dial(lead.phone).replace('+', '')}`}
+            href={`https://wa.me/${dial(enquiry.phone).replace('+', '')}`}
             target="_blank"
             rel="noreferrer"
           >
@@ -75,38 +117,36 @@ export default function LeadDrawer({ lead, onClose }: { lead: Lead; onClose: () 
         </div>
 
         <section className={css.block}>
-          <div className={ui.eyebrow}>Pipeline</div>
-          <div className={`${ui.pillRow} ${css.blockBody}`}>
-            {LEAD_STATUSES.map((status) => (
-              <button
-                key={status}
-                type="button"
-                className={status === lead.status ? css.stagePillOn : css.stagePill}
-                onClick={() => setLeadStatus(lead.id, status)}
-              >
-                {status}
-              </button>
-            ))}
+          <div className={ui.eyebrow}>Handling</div>
+          <div className={css.blockBody}>
+            <button
+              type="button"
+              className={`${ui.btnGhost} ${css.action}`}
+              onClick={toggleHandled}
+              disabled={busy}
+            >
+              {enquiry.isHandled ? 'Mark as new' : 'Mark as handled'}
+            </button>
+            {enquiry.isHandled && enquiry.handledAt && (
+              <p className={css.hint}>Handled {timeAgo(enquiry.handledAt).toLowerCase()}.</p>
+            )}
           </div>
         </section>
 
         <section className={css.block}>
-          <div className={ui.eyebrow}>Internal note</div>
+          <div className={ui.eyebrow}>Remove</div>
           <div className={css.blockBody}>
-            <textarea
-              className={ui.textarea}
-              rows={4}
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="What was agreed on the call"
-            />
             <button
               type="button"
-              className={`${ui.btnGhost} ${css.saveNote}`}
-              onClick={() => saveLeadNote(lead.id, note)}
+              className={armed ? `${css.danger} ${css.dangerArmed}` : css.danger}
+              onClick={remove}
+              disabled={busy}
             >
-              Save note
+              {armed ? 'Confirm — delete this enquiry' : 'Delete enquiry'}
             </button>
+            <p className={css.hint}>
+              {armed ? 'This cannot be undone. Click again to delete, or close the drawer.' : 'Removes it from the inbox for good.'}
+            </p>
           </div>
         </section>
       </div>

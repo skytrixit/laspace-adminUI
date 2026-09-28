@@ -16,16 +16,18 @@ import {
   type ReactNode,
 } from 'react'
 
-import { LEADS, PROJECTS, SERVICES } from '../data/demo'
-import type { Lead, LeadStatus, Project, Service } from '../data/types'
+import { PROJECTS, SERVICES } from '../data/demo'
+import type { EnquirySummary, Project, Service } from '../data/types'
+import { enquirySummary } from '../lib/enquiriesApi'
+import { useAuth } from './auth'
 
 type Studio = {
-  leads: Lead[]
+  /** Counts and the latest five, from the API. Null until the first load. */
+  enquiries: EnquirySummary | null
+  refreshEnquiries: () => Promise<void>
+
   services: Service[]
   projects: Project[]
-
-  setLeadStatus: (id: number, status: LeadStatus) => void
-  saveLeadNote: (id: number, note: string) => void
 
   toggleServicePub: (id: number) => void
   removeService: (id: number) => void
@@ -49,7 +51,8 @@ const nextId = (rows: { id: number }[]) =>
   rows.reduce((max, row) => Math.max(max, row.id), 0) + 1
 
 export function StudioProvider({ children }: { children: ReactNode }) {
-  const [leads, setLeads] = useState<Lead[]>(LEADS)
+  const { status } = useAuth()
+  const [enquiries, setEnquiries] = useState<EnquirySummary | null>(null)
   const [services, setServices] = useState<Service[]>(SERVICES)
   const [projects, setProjects] = useState<Project[]>(PROJECTS)
   const [toast, setToast] = useState<string | null>(null)
@@ -64,23 +67,28 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   }, [])
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
+  const refreshEnquiries = useCallback(async () => {
+    try {
+      setEnquiries(await enquirySummary())
+    } catch {
+      /* a 401 has already signed the panel out; anything else keeps the last counts */
+    }
+  }, [])
+
+  /* Load once signed in; forget on sign-out so the next owner starts clean. */
+  useEffect(() => {
+    if (status === 'in') void refreshEnquiries()
+    else setEnquiries(null)
+  }, [status, refreshEnquiries])
+
   const value = useMemo<Studio>(
     () => ({
-      leads,
+      enquiries,
+      refreshEnquiries,
       services,
       projects,
       toast,
       notify,
-
-      setLeadStatus(id, status) {
-        setLeads((rows) => rows.map((row) => (row.id === id ? { ...row, status } : row)))
-        notify('Status updated')
-      },
-
-      saveLeadNote(id, note) {
-        setLeads((rows) => rows.map((row) => (row.id === id ? { ...row, note } : row)))
-        notify('Note saved')
-      },
 
       /* The toast wording is read off the record as it stands now — the
          setState updater has not run yet at the point we announce it. */
@@ -121,7 +129,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         notify('Saved')
       },
     }),
-    [leads, services, projects, toast, notify],
+    [enquiries, refreshEnquiries, services, projects, toast, notify],
   )
 
   return <StudioContext.Provider value={value}>{children}</StudioContext.Provider>

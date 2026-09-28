@@ -4,25 +4,47 @@
    fetch() is the only change an API-backed build needs.
    ------------------------------------------------------------------------ */
 
-export type LeadStatus = 'New' | 'Contacted' | 'Site Visit' | 'Quoted' | 'Won' | 'Lost'
+export type EnquirySource =
+  | 'website_form'
+  | 'consultation_modal'
+  | 'instagram'
+  | 'referral'
+  | 'google'
+  | 'whatsapp'
+  | 'other'
 
-export type LeadSource = 'Website form' | 'Instagram' | 'Referral' | 'Google' | 'WhatsApp'
+export const SOURCE_LABEL: Record<EnquirySource, string> = {
+  website_form: 'Website form',
+  consultation_modal: 'Consultation dialog',
+  instagram: 'Instagram',
+  referral: 'Referral',
+  google: 'Google',
+  whatsapp: 'WhatsApp',
+  other: 'Other',
+}
 
-export type Lead = {
+/** One enquiry as the API returns it to the inbox. Timestamps are ISO strings. */
+export type Enquiry = {
   id: number
+  referenceCode: string
   name: string
   phone: string
-  service: string
-  city: string
-  source: LeadSource
-  ago: string
-  status: LeadStatus
-  budget: string
-  area: string
-  msg: string
-  /** Studio-only note, written from the drawer. Never shown to the client. */
-  note: string
+  email: string | null
+  serviceLabel: string
+  budgetLabel: string | null
+  message: string | null
+  source: EnquirySource
+  isHandled: boolean
+  handledAt: string | null
+  notifiedAt: string | null
+  submittedAt: string
+  createdAt: string
+  updatedAt: string
 }
+
+export type EnquiryPage = { items: Enquiry[]; page: number; pageSize: number; total: number }
+
+export type EnquirySummary = { total: number; unhandled: number; thisWeek: number; latest: Enquiry[] }
 
 export type ServiceCategory =
   | 'Residential'
@@ -75,24 +97,6 @@ export type Project = {
   linkedService: string
 }
 
-/** The statuses a lead moves through, in pipeline order. */
-export const LEAD_STATUSES: LeadStatus[] = [
-  'New',
-  'Contacted',
-  'Site Visit',
-  'Quoted',
-  'Won',
-  'Lost',
-]
-
-export const LEAD_SOURCES: LeadSource[] = [
-  'Website form',
-  'Instagram',
-  'Referral',
-  'Google',
-  'WhatsApp',
-]
-
 export const SERVICE_CATEGORIES: ServiceCategory[] = [
   'Residential',
   'Modular',
@@ -104,16 +108,6 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
 export const PROJECT_TYPES: ProjectType[] = ['Residential', 'Kitchens', 'Wardrobes', 'Commercial']
 
 export const PROJECT_STAGES: ProjectStage[] = ['Design', 'Ongoing', 'Completed', 'Draft']
-
-/** Text and border colour for every status chip, select and pill. */
-export const STATUS_TONE: Record<LeadStatus, { fg: string; bd: string }> = {
-  New: { fg: '#C29D62', bd: 'rgba(194,157,98,0.55)' },
-  Contacted: { fg: '#C4AD93', bd: 'rgba(196,173,147,0.35)' },
-  'Site Visit': { fg: '#C4AD93', bd: 'rgba(196,173,147,0.35)' },
-  Quoted: { fg: '#E4C88E', bd: 'rgba(228,200,142,0.45)' },
-  Won: { fg: '#9DBE8F', bd: 'rgba(157,190,143,0.45)' },
-  Lost: { fg: 'rgba(196,173,147,0.5)', bd: 'rgba(196,173,147,0.18)' },
-}
 
 /** The three badge tones a project card can carry. */
 export const PROJECT_STATE_TONE: Record<ProjectState, string> = {

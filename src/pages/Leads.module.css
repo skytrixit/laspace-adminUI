@@ -149,3 +149,62 @@
     width: 100%;
   }
 }
+
+/* Handled toggle — the same shape as the services Live/Draft button. */
+.handled {
+  width: 100%;
+  padding: 9px 6px;
+  background: transparent;
+  border: 1px solid currentColor;
+  font: 400 9.5px/1 var(--sans);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  transition:
+    color var(--ease),
+    border-color var(--ease);
+}
+
+.handledOn {
+  composes: handled;
+  color: var(--green);
+  border-color: rgba(157, 190, 143, 0.45);
+}
+
+.handledOff {
+  composes: handled;
+  color: var(--gold);
+  border-color: rgba(194, 157, 98, 0.55);
+}
+
+/* Pager ------------------------------------------------------------------- */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--hair);
+}
+
+.pagerNote {
+  font: 300 11px/1 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sand-60);
+}
+
+.pagerButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.pagerButtons button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.loading {
+  opacity: 0.55;
+  transition: opacity var(--ease);
+}
