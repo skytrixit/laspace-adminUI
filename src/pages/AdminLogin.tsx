@@ -9,7 +9,7 @@ import css from './AdminLogin.module.css'
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
 export default function AdminLogin() {
-  const { signedIn, signIn } = useAuth()
+  const { status, signedIn, signIn } = useAuth()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -20,6 +20,7 @@ export default function AdminLogin() {
   const [busy, setBusy] = useState(false)
 
   /* Nothing to sign in to — the studio is already through the door. */
+  if (status === 'checking') return null
   if (signedIn) return <Navigate to="/" replace />
 
   /* Any keystroke clears the last complaint. */

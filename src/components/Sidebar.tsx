@@ -9,7 +9,7 @@ type Item = { to: string; label: string; end?: boolean; count?: number }
 
 export default function Sidebar() {
   const { leads, services, projects } = useStudio()
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
 
   const items: Item[] = [
     { to: '/', label: 'Dashboard', end: true },
@@ -52,10 +52,10 @@ export default function Sidebar() {
       </nav>
 
       <div className={css.owner}>
-        <span className={css.mono}>TB</span>
+        <span className={css.mono}>{user?.initials ?? ''}</span>
         <div className={css.ownerText}>
-          <div className={css.ownerName}>Thoti Balachandu</div>
-          <div className={css.ownerRole}>Owner</div>
+          <div className={css.ownerName}>{user?.displayName ?? ''}</div>
+          <div className={css.ownerRole}>{user?.role ?? ''}</div>
           {/* Clearing the session drops the guard, which redirects to login. */}
           <button type="button" className={css.signOut} onClick={signOut}>
             Sign out

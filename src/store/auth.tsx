@@ -1,18 +1,20 @@
 /* ── Session ───────────────────────────────────────────────────────────────
-   One flag, held in localStorage when the studio asked to stay signed in and
-   in sessionStorage otherwise. Every read and write is guarded: a private
-   window or blocked site data throws on access, and the panel still has to
-   render — it just cannot remember anyone.
+   Holds who is signed in. On boot, a stored token is checked against /me
+   before anything renders, so a stale token never shows the shell for a
+   moment and then bounces. A 401 on any later call signs the panel out.
    ------------------------------------------------------------------------ */
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
-import { authenticate, type Session } from '../lib/authApi'
+import { login, logout, me, type AdminUser } from '../lib/authApi'
+import { setUnauthorizedHandler } from '../lib/http'
+import { clearToken, readToken, writeToken } from '../lib/session'
 
-const KEY = 'laspace_admin_session'
+type Status = 'checking' | 'in' | 'out'
 
 type Auth = {
-  session: Session | null
+  status: Status
+  user: AdminUser | null
   signedIn: boolean
   signIn: (email: string, password: string, remember: boolean) => Promise<void>
   signOut: () => void
@@ -20,56 +22,50 @@ type Auth = {
 
 const AuthContext = createContext<Auth | null>(null)
 
-const stores = () => [window.localStorage, window.sessionStorage]
-
-const readSession = (): Session | null => {
-  for (const store of stores()) {
-    try {
-      const raw = store.getItem(KEY)
-      if (raw) return JSON.parse(raw) as Session
-    } catch {
-      /* storage unavailable — treat as signed out */
-    }
-  }
-  return null
-}
-
-const clearSession = () => {
-  for (const store of stores()) {
-    try {
-      store.removeItem(KEY)
-    } catch {
-      /* nothing to clear */
-    }
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(readSession)
+  const [state, setState] = useState<{ status: Status; user: AdminUser | null }>(() =>
+    readToken() ? { status: 'checking', user: null } : { status: 'out', user: null },
+  )
+
+  const drop = useCallback(() => {
+    clearToken()
+    setState({ status: 'out', user: null })
+  }, [])
+
+  /* Verify a stored token once, on boot. */
+  useEffect(() => {
+    if (state.status !== 'checking') return
+    let cancelled = false
+    me()
+      .then(({ user }) => !cancelled && setState({ status: 'in', user }))
+      .catch(() => !cancelled && drop())
+    return () => {
+      cancelled = true
+    }
+  }, [state.status, drop])
+
+  /* Any 401 from any call means the session is gone server-side. */
+  useEffect(() => {
+    setUnauthorizedHandler(drop)
+    return () => setUnauthorizedHandler(null)
+  }, [drop])
 
   const signIn = useCallback(async (email: string, password: string, remember: boolean) => {
-    const next = await authenticate(email, password)
-
-    /* Write to one store only, and clear the other, so flipping "keep me
-       signed in" never leaves a second flag behind. */
-    clearSession()
-    try {
-      const store = remember ? window.localStorage : window.sessionStorage
-      store.setItem(KEY, JSON.stringify(next))
-    } catch {
-      /* the session lives in memory for this tab either way */
-    }
-    setSession(next)
+    const { token, user } = await login(email, password, remember)
+    writeToken(token, remember)
+    setState({ status: 'in', user })
   }, [])
 
+  /* Revoke server-side, then forget locally. The local part never waits on
+     the network — Sign out must work even if the API is unreachable. */
   const signOut = useCallback(() => {
-    clearSession()
-    setSession(null)
-  }, [])
+    logout().catch(() => undefined)
+    drop()
+  }, [drop])
 
   const value = useMemo<Auth>(
-    () => ({ session, signedIn: session !== null, signIn, signOut }),
-    [session, signIn, signOut],
+    () => ({ status: state.status, user: state.user, signedIn: state.status === 'in', signIn, signOut }),
+    [state, signIn, signOut],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

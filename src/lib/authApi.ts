@@ -1,26 +1,40 @@
-/* ── Auth endpoint (stubbed) ───────────────────────────────────────────────
-   Stands in for POST /api/admin/session until the backend exists. Replace
-   the body of `authenticate` with the real request; the thrown
-   BadCredentials is what the login form turns into its error block.
+import { api, ApiError } from './http'
+
+/* ── Auth endpoints ────────────────────────────────────────────────────────
+   Thin, typed calls. The session itself is held by the auth store.
    ------------------------------------------------------------------------ */
 
-export type Session = { email: string }
+export type AdminUser = {
+  id: number
+  email: string
+  displayName: string
+  initials: string
+  role: 'owner'
+}
 
+export type LoginResult = { token: string; expiresAt: string; user: AdminUser }
+
+/** Wrong email or password — the login form shows its message verbatim. */
 export class BadCredentials extends Error {
-  constructor() {
-    super('Those credentials do not match our records.')
+  constructor(message: string) {
+    super(message)
     this.name = 'BadCredentials'
   }
 }
 
-/** The one account the stub recognises. Documented in the README. */
-const DEMO = { email: 'studio@laspaceinteriors.com', password: 'laspace' }
-
-export async function authenticate(email: string, password: string): Promise<Session> {
-  await new Promise((resolve) => setTimeout(resolve, 900))
-
-  const normalised = email.trim().toLowerCase()
-  if (normalised !== DEMO.email || password !== DEMO.password) throw new BadCredentials()
-
-  return { email: DEMO.email }
+export async function login(email: string, password: string, remember: boolean): Promise<LoginResult> {
+  try {
+    return await api<LoginResult>('/admin/auth/login', {
+      method: 'POST',
+      body: { email, password, remember },
+      auth: false,
+    })
+  } catch (cause) {
+    if (cause instanceof ApiError && cause.code === 'invalid_credentials') throw new BadCredentials(cause.message)
+    throw cause
+  }
 }
+
+export const me = () => api<{ user: AdminUser; expiresAt: string }>('/admin/auth/me')
+
+export const logout = () => api<void>('/admin/auth/logout', { method: 'POST' })

@@ -6,5 +6,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/admin/',
   plugins: [react()],
-  server: { port: 5174, open: '/admin/' },
+  server: {
+    port: 5174,
+    open: '/admin/',
+    /* Same-origin /api in the browser, forwarded to the Nest API in dev. */
+    proxy: { '/api': 'http://localhost:4000' },
+  },
 })
