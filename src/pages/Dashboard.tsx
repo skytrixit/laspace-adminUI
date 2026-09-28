@@ -19,8 +19,8 @@ export default function Dashboard() {
   const kpis = [
     { label: 'New Enquiries', value: enquiries?.unhandled ?? '—', note: 'awaiting a reply' },
     { label: 'This Week', value: enquiries?.thisWeek ?? '—', note: `${enquiries?.total ?? '—'} received in all` },
-    { label: 'Live Services', value: services.filter((s) => s.pub).length, note: `${services.length} in catalogue` },
-    { label: 'Projects', value: projects.filter((p) => p.state !== 'Draft').length, note: `${projects.length} in portfolio` },
+    { label: 'Live Services', value: services.filter((s) => s.isPublished).length, note: `${services.length} in catalogue` },
+    { label: 'Live Projects', value: projects.filter((p) => p.isPublished).length, note: `${projects.filter((p) => p.isFeatured).length} featured on home` },
   ]
 
   return (

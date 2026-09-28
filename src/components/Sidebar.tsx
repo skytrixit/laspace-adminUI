@@ -8,7 +8,7 @@ import css from './Sidebar.module.css'
 type Item = { to: string; label: string; end?: boolean; count?: number }
 
 export default function Sidebar() {
-  const { enquiries, services, projects } = useStudio()
+  const { enquiries, services, projects, testimonials, brands, faqs } = useStudio()
   const { signOut, user } = useAuth()
 
   const items: Item[] = [
@@ -16,6 +16,10 @@ export default function Sidebar() {
     { to: '/leads', label: 'Enquiries', count: enquiries?.unhandled ?? 0 },
     { to: '/services', label: 'Services', end: true, count: services.length },
     { to: '/projects', label: 'Projects', end: true, count: projects.length },
+    { to: '/testimonials', label: 'Testimonials', count: testimonials.length },
+    { to: '/brands', label: 'Brands', count: brands.length },
+    { to: '/faqs', label: 'FAQs', count: faqs.length },
+    { to: '/settings', label: 'Site Details' },
     { to: '/services/new', label: 'Add Service' },
     { to: '/projects/new', label: 'Add Project' },
   ]

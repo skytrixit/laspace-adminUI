@@ -7,54 +7,74 @@ import Field from '../components/Field'
 import HeaderBar from '../components/HeaderBar'
 import Shell from '../components/Shell.module.css'
 import Toggle from '../components/Toggle'
-import { SERVICE_CATEGORIES, type Service, type ServiceCategory } from '../data/types'
+import type { Service, ServiceInput } from '../data/types'
+import { ApiError } from '../lib/http'
+import { slugify } from '../lib/slug'
 import { useStudio } from '../store/studio'
 import form from '../styles/form.module.css'
 import ui from '../styles/ui.module.css'
 
-/** A fresh record. The id is replaced by the store when the draft is saved. */
-const blank = (): Service => ({
-  id: 0,
-  n: '',
-  cat: 'Residential',
-  sub: '',
-  price: '',
-  pub: false,
-  tagline: '',
-  unit: '',
-  summary: '',
-  description: '',
-  benefit: '',
-  includes: [],
-  steps: [],
-  order: 1,
+const blank = (): ServiceInput => ({
+  name: '',
+  slug: '',
+  shortDescription: '',
+  fullDescription: null,
+  inclusions: [],
+  imageId: null,
+  isPublished: false,
+})
+
+const fromService = (s: Service): ServiceInput => ({
+  name: s.name,
+  slug: s.slug,
+  shortDescription: s.shortDescription,
+  fullDescription: s.fullDescription,
+  inclusions: s.inclusions,
+  imageId: s.imageId,
+  isPublished: s.isPublished,
 })
 
 export default function ServiceForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { services, saveService } = useStudio()
+  const { services, loaded, saveService } = useStudio()
 
-  const existing = id ? services.find((service) => String(service.id) === id) : undefined
-  const [draft, setDraft] = useState<Service>(() => existing ?? blank())
+  const existing = id ? services.find((s) => String(s.id) === id) : undefined
+  const [draft, setDraft] = useState<ServiceInput>(() => (existing ? fromService(existing) : blank()))
+  const [slugTouched, setSlugTouched] = useState(Boolean(existing))
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
 
-  /* A stale edit link — the service was deleted from the list. */
-  if (id && !existing) return <Navigate to="/services" replace />
+  /* A stale edit link — or the store has not loaded yet. */
+  if (id && loaded && !existing) return <Navigate to="/services" replace />
+  if (id && !loaded) return null
 
-  const set = <K extends keyof Service>(key: K, value: Service[K]) =>
-    setDraft((current) => ({ ...current, [key]: value }))
+  const set = <K extends keyof ServiceInput>(key: K, value: ServiceInput[K]) => {
+    setDraft((d) => ({ ...d, [key]: value }))
+    setErrors((e) => (key in e ? { ...e, [key]: '' } : e))
+  }
 
-  const save = () => {
-    saveService(draft)
-    navigate('/services')
+  /* The address follows the name until the owner edits it by hand. */
+  const setName = (name: string) => {
+    set('name', name)
+    if (!slugTouched) setDraft((d) => ({ ...d, name, slug: slugify(name) }))
+  }
+
+  const save = async () => {
+    setSaving(true)
+    try {
+      const payload = { ...draft, slug: draft.slug?.trim() || undefined }
+      await saveService(payload, existing?.id)
+      navigate('/services')
+    } catch (err) {
+      if (err instanceof ApiError) setErrors(err.fields)
+      setSaving(false)
+    }
   }
 
   return (
     <>
-      <HeaderBar
-        crumb="Catalogue / Services"
-        title={existing ? 'Edit Service' : 'Add a Service'}
-      />
+      <HeaderBar crumb="Catalogue / Services" title={existing ? 'Edit Service' : 'Add a Service'} />
 
       <div className={Shell.content}>
         <div className={form.shell}>
@@ -63,143 +83,54 @@ export default function ServiceForm() {
               <div className={`${ui.eyebrow} ${form.cardHead}`}>Service Details</div>
 
               <div className={ui.fieldGrid}>
-                <Field label="Service Name" full>
+                <Field label="Service Name" full error={errors.name}>
+                  <input className={ui.input} value={draft.name} onChange={(e) => setName(e.target.value)} placeholder="Full Home Interiors" />
+                </Field>
+
+                <Field label="Address" hint={`/services/${draft.slug || '…'}`} full error={errors.slug}>
                   <input
                     className={ui.input}
-                    value={draft.n}
-                    onChange={(event) => set('n', event.target.value)}
-                    placeholder="Full Home Interiors"
+                    value={draft.slug ?? ''}
+                    onChange={(e) => {
+                      setSlugTouched(true)
+                      set('slug', slugify(e.target.value.replace(/\s+/g, '-')))
+                    }}
+                    placeholder="full-home-interiors"
                   />
                 </Field>
 
-                <Field label="Category">
-                  <select
-                    className={ui.select}
-                    value={draft.cat}
-                    onChange={(event) => set('cat', event.target.value as ServiceCategory)}
-                  >
-                    {SERVICE_CATEGORIES.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
+                <Field label="Short Description" hint="shown on the service card" full error={errors.shortDescription}>
+                  <textarea className={ui.textarea} rows={2} value={draft.shortDescription} onChange={(e) => set('shortDescription', e.target.value)} />
                 </Field>
 
-                <Field label="Card Tagline">
-                  <input
-                    className={ui.input}
-                    value={draft.tagline}
-                    onChange={(event) => set('tagline', event.target.value)}
-                    placeholder="From ₹2,200 / running ft"
-                  />
-                </Field>
-
-                <Field label="Price Range">
-                  <input
-                    className={ui.input}
-                    value={draft.price}
-                    onChange={(event) => set('price', event.target.value)}
-                    placeholder="₹1,450 / sq ft"
-                  />
-                </Field>
-
-                <Field label="Pricing Unit">
-                  <input
-                    className={ui.input}
-                    value={draft.unit}
-                    onChange={(event) => set('unit', event.target.value)}
-                    placeholder="sq ft"
-                  />
-                </Field>
-
-                <Field label="Short Summary" hint="shown on the service card" full>
-                  <textarea
-                    className={ui.textarea}
-                    rows={2}
-                    value={draft.summary}
-                    onChange={(event) => set('summary', event.target.value)}
-                  />
-                </Field>
-
-                <Field label="Full Description" hint="service detail page" full>
-                  <textarea
-                    className={ui.textarea}
-                    rows={6}
-                    value={draft.description}
-                    onChange={(event) => set('description', event.target.value)}
-                  />
-                </Field>
-
-                <Field label="Client Benefit" full>
-                  <textarea
-                    className={ui.textarea}
-                    rows={3}
-                    value={draft.benefit}
-                    onChange={(event) => set('benefit', event.target.value)}
-                  />
+                <Field label="Full Description" hint="service detail page" full error={errors.fullDescription}>
+                  <textarea className={ui.textarea} rows={6} value={draft.fullDescription ?? ''} onChange={(e) => set('fullDescription', e.target.value || null)} />
                 </Field>
               </div>
             </section>
 
             <section className={`${ui.panel} ${form.card}`}>
               <div className={`${ui.eyebrow} ${form.cardHead}`}>What&rsquo;s Included</div>
-              <ChipList
-                items={draft.includes}
-                placeholder="Add an inclusion and press Enter"
-                onChange={(items) => set('includes', items)}
-              />
-            </section>
-
-            <section className={`${ui.panel} ${form.card}`}>
-              <div className={`${ui.eyebrow} ${form.cardHead}`}>Process Steps</div>
-              <ChipList
-                items={draft.steps}
-                placeholder="Add a step and press Enter"
-                numbered
-                onChange={(items) => set('steps', items)}
-              />
+              <ChipList items={draft.inclusions} placeholder="Add an inclusion and press Enter" onChange={(items) => set('inclusions', items)} />
+              {errors.inclusions && <div className={ui.fieldError}>{errors.inclusions}</div>}
             </section>
           </div>
 
           <div className={form.rail}>
             <section className={`${ui.panel} ${form.card}`}>
-              <div className={`${ui.eyebrow} ${form.cardHead}`}>Hero Image</div>
-              <Dropzone
-                title="Drop image"
-                hint="JPG or PNG · min 1600px wide / Arch crop applied automatically"
-              />
+              <div className={`${ui.eyebrow} ${form.cardHead}`}>Image</div>
+              <Dropzone title="Drop image" hint="Uploads arrive in the next phase" preview={existing?.image?.src ?? null} />
             </section>
 
             <section className={`${ui.panel} ${form.card}`}>
               <div className={`${ui.eyebrow} ${form.cardHead}`}>Publishing</div>
-              <Toggle
-                on={draft.pub}
-                onLabel="Live on the site"
-                offLabel="Saved as draft"
-                onToggle={() => set('pub', !draft.pub)}
-              />
-              <div className={form.railStack}>
-                <Field label="Display Order">
-                  <input
-                    className={ui.input}
-                    type="number"
-                    min={1}
-                    value={draft.order}
-                    onChange={(event) => set('order', Number(event.target.value))}
-                  />
-                </Field>
-              </div>
+              <Toggle on={draft.isPublished} onLabel="Live on the site" offLabel="Saved as draft" onToggle={() => set('isPublished', !draft.isPublished)} />
             </section>
 
-            <button type="button" className={`${ui.btnGold} ${form.save}`} onClick={save}>
-              Save Service
+            <button type="button" className={`${ui.btnGold} ${form.save}`} onClick={save} disabled={saving}>
+              {saving ? 'Saving…' : 'Save Service'}
             </button>
-            <button
-              type="button"
-              className={`${ui.btnGhost} ${form.cancel}`}
-              onClick={() => navigate('/services')}
-            >
+            <button type="button" className={`${ui.btnGhost} ${form.cancel}`} onClick={() => navigate('/services')}>
               Cancel
             </button>
           </div>

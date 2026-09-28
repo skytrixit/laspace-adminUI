@@ -1,0 +1,174 @@
+/* ── Shared list + editor layout for testimonials, brands and FAQs ────────── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.add {
+  flex: 0 0 auto;
+  border-color: var(--gold);
+}
+
+.editor {
+  margin-bottom: 22px;
+  padding: 30px;
+}
+
+.editorHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.editorActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 760px;
+}
+
+.head,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 76px 96px 132px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+}
+
+.head {
+  border-bottom: 1px solid var(--hair);
+}
+
+.row {
+  border-bottom: 1px solid var(--hair-row);
+  transition: background-color var(--ease);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row:hover {
+  background: var(--tint-hover);
+}
+
+.th {
+  font: 400 9.5px/1 var(--sans);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sand-68);
+}
+
+.name {
+  font: 400 13.5px/1.3 var(--sans);
+  color: var(--ivory);
+}
+
+.sub {
+  margin-top: 5px;
+  font: 300 12.5px/1.5 var(--sans);
+  color: var(--sand-45);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.cell {
+  font: 300 12.5px/1.3 var(--sans);
+  color: var(--sand);
+  overflow-wrap: anywhere;
+}
+
+.state {
+  width: 100%;
+  padding: 8px 6px;
+  background: transparent;
+  border: 1px solid currentColor;
+  font: 400 9.5px/1 var(--sans);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  transition:
+    color var(--ease),
+    border-color var(--ease);
+}
+
+.live {
+  composes: state;
+  color: var(--green);
+  border-color: rgba(157, 190, 143, 0.45);
+}
+
+.draft {
+  composes: state;
+  color: var(--sand-60);
+  border-color: var(--hair-row);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit {
+  flex: 1 1 auto;
+  padding: 12px 8px;
+  background: transparent;
+  border: 1px solid var(--hair-ghost);
+  font: 400 10px/1 var(--sans);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--gold);
+  transition:
+    color var(--ease),
+    background-color var(--ease),
+    border-color var(--ease);
+}
+
+.edit:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--black);
+}
+
+.delete {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--hair-input);
+  font-size: 11px;
+  color: var(--sand-50);
+  transition:
+    color var(--ease),
+    border-color var(--ease);
+}
+
+.delete:hover {
+  border-color: var(--danger-border);
+  color: var(--danger-glyph);
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+}

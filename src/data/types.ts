@@ -46,72 +46,163 @@ export type EnquiryPage = { items: Enquiry[]; page: number; pageSize: number; to
 
 export type EnquirySummary = { total: number; unhandled: number; thisWeek: number; latest: Enquiry[] }
 
-export type ServiceCategory =
-  | 'Residential'
-  | 'Modular'
-  | 'Commercial'
-  | 'Renovation'
-  | 'Consultation'
+/* ── Media ───────────────────────────────────────────────────────────────── */
+
+export type MediaDerivative = {
+  format: 'avif' | 'webp' | 'jpeg'
+  width: number
+  height: number
+  key: string
+  bytes: number
+  src: string
+}
+
+export type MediaView = {
+  id: number
+  src: string
+  width: number
+  height: number
+  alt: string | null
+  lqipColor: string | null
+  status: 'processing' | 'ready' | 'failed'
+  derivatives: MediaDerivative[]
+}
+
+/* ── Content, as the admin API returns it ─────────────────────────────────
+   Timestamps are ISO strings. `*Input` is what the forms send.
+   ------------------------------------------------------------------------ */
 
 export type Service = {
   id: number
-  n: string
-  cat: ServiceCategory
-  sub: string
-  price: string
-  pub: boolean
-  /* Long-form fields, edited on the service form. */
-  tagline: string
-  unit: string
-  summary: string
-  description: string
-  benefit: string
-  includes: string[]
-  steps: string[]
-  order: number
+  slug: string
+  name: string
+  shortDescription: string
+  fullDescription: string | null
+  inclusions: string[]
+  image: MediaView | null
+  imageId: number | null
+  isPublished: boolean
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
 }
 
-export type ProjectType = 'Residential' | 'Kitchens' | 'Wardrobes' | 'Commercial'
+export type ServiceInput = {
+  name: string
+  slug?: string
+  shortDescription: string
+  fullDescription: string | null
+  inclusions: string[]
+  imageId: number | null
+  isPublished: boolean
+}
 
-export type ProjectState = 'Live' | 'Ongoing' | 'Draft'
-
-export type ProjectStage = 'Design' | 'Ongoing' | 'Completed' | 'Draft'
+/** The site's filter set. Free text is allowed too; these are the suggestions. */
+export const PROJECT_CATEGORIES = ['Residential', 'Kitchen', 'Wardrobe', 'Commercial'] as const
 
 export type Project = {
   id: number
+  slug: string
   title: string
-  type: ProjectType
-  city: string
-  area: string
-  year: string
-  state: ProjectState
-  img: string
-  note: string
-  feat: boolean
-  /* Long-form fields, edited on the project form. */
-  stage: ProjectStage
-  handover: string
-  story: string
-  scope: string[]
-  gallery: string[]
-  linkedService: string
+  typeLabel: string | null
+  categories: string[]
+  location: string
+  areaLabel: string | null
+  yearLabel: string | null
+  shortDescription: string
+  fullDescription: string | null
+  cover: MediaView | null
+  coverId: number | null
+  gallery: MediaView[]
+  isFeatured: boolean
+  isPublished: boolean
+  displayOrder: number
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
 }
 
-export const SERVICE_CATEGORIES: ServiceCategory[] = [
-  'Residential',
-  'Modular',
-  'Commercial',
-  'Renovation',
-  'Consultation',
-]
-
-export const PROJECT_TYPES: ProjectType[] = ['Residential', 'Kitchens', 'Wardrobes', 'Commercial']
-
-export const PROJECT_STAGES: ProjectStage[] = ['Design', 'Ongoing', 'Completed', 'Draft']
-
-/** The three badge tones a project card can carry. */
-export const PROJECT_STATE_TONE: Record<ProjectState, string> = {
-  Live: '#9DBE8F',
-  Ongoing: '#C29D62',
-  Draft: 'rgba(196,173,147,0.65)',
+export type ProjectInput = {
+  title: string
+  slug?: string
+  typeLabel: string | null
+  categories: string[]
+  location: string
+  areaLabel: string | null
+  yearLabel: string | null
+  shortDescription: string
+  fullDescription: string | null
+  coverId: number | null
+  isFeatured: boolean
+  isPublished: boolean
 }
+
+export type Testimonial = {
+  id: number
+  customerName: string
+  attribution: string | null
+  quote: string
+  photo: MediaView | null
+  photoId: number | null
+  isPublished: boolean
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type TestimonialInput = {
+  customerName: string
+  attribution: string | null
+  quote: string
+  photoId: number | null
+  isPublished: boolean
+}
+
+export type Brand = {
+  id: number
+  name: string
+  websiteUrl: string | null
+  logo: MediaView | null
+  logoId: number | null
+  isPublished: boolean
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type BrandInput = { name: string; websiteUrl: string | null; logoId: number | null; isPublished: boolean }
+
+export type Faq = {
+  id: number
+  question: string
+  answer: string
+  isPublished: boolean
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type FaqInput = { question: string; answer: string; isPublished: boolean }
+
+export type SiteSettings = {
+  id: number
+  phone: string
+  phoneHref: string
+  whatsappHref: string
+  email: string
+  addressLine1: string
+  addressLine2: string | null
+  addressLine3: string | null
+  hours: string
+  mapsUrl: string | null
+  instagramUrl: string | null
+  facebookUrl: string | null
+  youtubeUrl: string | null
+  statProjects: number
+  statFamilies: number
+  statConcepts: number
+  statYears: number
+  updatedAt: string
+}
+
+export type SiteSettingsInput = Omit<SiteSettings, 'id' | 'updatedAt'>

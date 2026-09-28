@@ -331,3 +331,61 @@
   font: 300 11px/1 var(--sans);
   color: var(--sand-45);
 }
+
+/* Field errors ------------------------------------------------------------ */
+.fieldError {
+  font: 300 11px/1.5 var(--sans);
+  color: var(--danger-glyph);
+}
+
+/* Order arrows ------------------------------------------------------------ */
+.arrows {
+  display: flex;
+  gap: 6px;
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hair-input);
+  font-size: 12px;
+  color: var(--sand-60);
+  transition:
+    color var(--ease),
+    border-color var(--ease);
+}
+
+.arrow:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.arrow:disabled:hover {
+  border-color: var(--hair-input);
+  color: var(--sand-60);
+}
+
+/* Current image preview in a form rail ------------------------------------ */
+.thumb {
+  width: 100%;
+  height: 178px;
+  margin-bottom: 12px;
+  background-color: var(--black);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--hair);
+}
+
+/* Two-step delete: armed state holds the danger tone ---------------------- */
+.armed {
+  border-color: var(--danger-border) !important;
+  color: var(--danger-glyph) !important;
+}

@@ -4,12 +4,16 @@ import AdminShell from './components/AdminShell'
 import RequireAuth from './components/RequireAuth'
 import Toast from './components/Toast'
 import AdminLogin from './pages/AdminLogin'
+import Brands from './pages/Brands'
 import Dashboard from './pages/Dashboard'
+import Faqs from './pages/Faqs'
 import Leads from './pages/Leads'
 import ProjectForm from './pages/ProjectForm'
 import Projects from './pages/Projects'
 import ServiceForm from './pages/ServiceForm'
 import Services from './pages/Services'
+import Settings from './pages/Settings'
+import Testimonials from './pages/Testimonials'
 import { AuthProvider } from './store/auth'
 import { StudioProvider } from './store/studio'
 
@@ -32,6 +36,10 @@ export default function App() {
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/projects/new" element={<ProjectForm />} />
                 <Route path="/projects/:id" element={<ProjectForm />} />
+                <Route path="/testimonials" element={<Testimonials />} />
+                <Route path="/brands" element={<Brands />} />
+                <Route path="/faqs" element={<Faqs />} />
+                <Route path="/settings" element={<Settings />} />
               </Route>
             </Route>
 
