@@ -1,0 +1,53 @@
+/* ── Design tokens ─────────────────────────────────────────────────────────
+   Exact values from the approved admin spec. Do not substitute.
+   ------------------------------------------------------------------------ */
+:root {
+  /* Colour */
+  --black: #080807;
+  --panel: #0c0b09;
+  --gold: #c29d62;
+  --gold-dark: #8a6d3f;
+  --sand: #c4ad93;
+  --ivory: #f2ede6;
+  --green: #9dbe8f;
+  --amber: #e4c88e;
+
+  /* Gold alphas — borders, tints and dashes */
+  --hair: rgba(194, 157, 98, 0.16);
+  --hair-input: rgba(194, 157, 98, 0.24);
+  --hair-row: rgba(194, 157, 98, 0.08);
+  --hair-dash: rgba(194, 157, 98, 0.34);
+  --hair-ghost: rgba(194, 157, 98, 0.38);
+  --hair-pill: rgba(194, 157, 98, 0.26);
+  --hair-drawer: rgba(194, 157, 98, 0.28);
+  --tint-hover: rgba(194, 157, 98, 0.04);
+  --tint-nav: rgba(194, 157, 98, 0.07);
+  --tint-active: rgba(194, 157, 98, 0.1);
+  --track: rgba(194, 157, 98, 0.14);
+
+  /* Sand alphas — secondary and tertiary text */
+  --sand-78: rgba(196, 173, 147, 0.78);
+  --sand-72: rgba(196, 173, 147, 0.72);
+  --sand-68: rgba(196, 173, 147, 0.68);
+  --sand-65: rgba(196, 173, 147, 0.65);
+  --sand-60: rgba(196, 173, 147, 0.6);
+  --sand-50: rgba(196, 173, 147, 0.5);
+  --sand-45: rgba(196, 173, 147, 0.45);
+  --sand-40: rgba(196, 173, 147, 0.4);
+  --placeholder: rgba(196, 173, 147, 0.38);
+  --sand-18: rgba(196, 173, 147, 0.18);
+
+  /* Destructive — delete button hover only */
+  --danger-border: #8a3f3f;
+  --danger-glyph: #c97c7c;
+
+  /* Type */
+  --serif: 'Cormorant Garamond', Garamond, 'Times New Roman', serif;
+  --sans: 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Layout */
+  --sidebar-w: 252px;
+  --gutter: 36px;
+  --ease: 0.25s ease;
+  --ease-slow: 0.3s ease;
+}

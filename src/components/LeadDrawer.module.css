@@ -1,0 +1,191 @@
+/* ── Lead drawer ───────────────────────────────────────────────────────────
+   The one slide-in in the panel. Everything else changes colour only.
+   ------------------------------------------------------------------------ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  animation: fade 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.panel {
+  position: relative;
+  width: min(460px, 100%);
+  height: 100%;
+  padding: 34px;
+  overflow-y: auto;
+  background: var(--panel);
+  border-left: 1px solid var(--hair-drawer);
+  animation: slide 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.close {
+  position: absolute;
+  top: 26px;
+  right: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--hair-input);
+  font-size: 13px;
+  color: var(--sand);
+  transition:
+    color var(--ease),
+    background-color var(--ease),
+    border-color var(--ease);
+}
+
+.close:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--black);
+}
+
+.name {
+  margin-top: 14px;
+  font: 500 36px/1.1 var(--serif);
+  color: var(--ivory);
+  padding-right: 48px;
+}
+
+.where {
+  margin-top: 10px;
+  font: 400 11px/1.4 var(--sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sand-72);
+}
+
+/* Contact actions --------------------------------------------------------- */
+.contact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 28px 0 30px;
+}
+
+.call,
+.whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 10px;
+  font: 400 10.5px/1 var(--sans);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition:
+    color var(--ease),
+    background-color var(--ease),
+    border-color var(--ease);
+}
+
+.call {
+  border: 1px solid var(--gold);
+  color: var(--gold);
+}
+
+.call:hover {
+  background: var(--gold);
+  color: var(--black);
+}
+
+.whatsapp {
+  border: 1px solid var(--hair-input);
+  color: var(--sand);
+}
+
+.whatsapp:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* Field list -------------------------------------------------------------- */
+.fields {
+  border-top: 1px solid var(--hair-row);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 18px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--hair-row);
+}
+
+.rowValue {
+  font: 300 13px/1.7 var(--sans);
+  color: var(--ivory);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Pipeline and note ------------------------------------------------------- */
+.block {
+  margin-top: 30px;
+}
+
+.blockBody {
+  margin-top: 16px;
+}
+
+.stagePill {
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid var(--hair-pill);
+  font: 400 10px/1 var(--sans);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sand);
+  transition:
+    color var(--ease),
+    background-color var(--ease),
+    border-color var(--ease);
+}
+
+.stagePill:hover {
+  border-color: var(--gold);
+}
+
+.stagePillOn {
+  composes: stagePill;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--black);
+}
+
+.saveNote {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px;
+}

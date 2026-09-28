@@ -1,0 +1,151 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.search {
+  flex: 0 0 auto;
+  width: 280px;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid var(--hair-input);
+  font: 300 14px/1.4 var(--sans);
+  color: var(--ivory);
+  transition: border-color var(--ease);
+}
+
+.search:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+/* Table ------------------------------------------------------------------- */
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 880px;
+}
+
+.head,
+.row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1.2fr)
+    minmax(0, 0.8fr) 132px 40px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+}
+
+.head {
+  border-bottom: 1px solid var(--hair);
+}
+
+.row {
+  border-bottom: 1px solid var(--hair-row);
+  transition: background-color var(--ease);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row:hover {
+  background: var(--tint-hover);
+}
+
+.th {
+  font: 400 9.5px/1 var(--sans);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sand-68);
+}
+
+.primary {
+  font: 400 13.5px/1.3 var(--sans);
+  color: var(--ivory);
+}
+
+.secondary {
+  font: 300 12.5px/1.3 var(--sans);
+  color: var(--sand);
+}
+
+.sub {
+  margin-top: 5px;
+  font: 300 11px/1.3 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sand-45);
+}
+
+.subTime {
+  margin-top: 5px;
+  font: 300 11px/1.3 var(--sans);
+  color: var(--sand-45);
+}
+
+/* Status select ----------------------------------------------------------- */
+.status {
+  width: 100%;
+  padding: 9px 11px;
+  background: transparent;
+  border: 1px solid currentColor;
+  appearance: none;
+  font: 400 9.5px/1.3 var(--sans);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color var(--ease),
+    border-color var(--ease);
+}
+
+.status:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+/* Native option lists cannot inherit a transparent surface. */
+.status option {
+  background: var(--panel);
+  color: var(--ivory);
+  letter-spacing: normal;
+}
+
+/* Open-drawer button ------------------------------------------------------ */
+.open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--hair-input);
+  font-size: 13px;
+  color: var(--gold);
+  transition:
+    color var(--ease),
+    background-color var(--ease),
+    border-color var(--ease);
+}
+
+.open:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--black);
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .search {
+    width: 100%;
+  }
+}

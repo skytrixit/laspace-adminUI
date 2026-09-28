@@ -1,0 +1,28 @@
+.toast {
+  position: fixed;
+  bottom: 34px;
+  left: 50%;
+  z-index: 200;
+  transform: translateX(-50%);
+  padding: 16px 26px;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  font: 400 12px/1 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  animation: rise 0.3s ease both;
+}
+
+/* The one place besides the drawer where anything moves: the spec calls for
+   the toast to fade *up* into place. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

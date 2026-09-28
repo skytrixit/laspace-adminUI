@@ -1,0 +1,9 @@
+.chip {
+  display: inline-block;
+  padding: 6px 11px;
+  border: 1px solid currentColor;
+  font: 400 9.5px/1 var(--sans);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
