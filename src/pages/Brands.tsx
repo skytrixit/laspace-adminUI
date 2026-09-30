@@ -67,7 +67,23 @@ export default function Brands() {
                 <input className={ui.input} value={editing.draft.websiteUrl ?? ''} onChange={(e) => set('websiteUrl', e.target.value || null)} placeholder="https://www.hettich.com" />
               </Field>
               <Field label="Logo" group full>
-                <Dropzone title="Drop logo" hint="Uploads arrive in the next phase" preview={editing.logo ?? null} />
+                <Dropzone
+                  title="Drop logo"
+                  hint="PNG with transparency, or SVG exported to PNG"
+                  preview={editing.logo ?? null}
+                  onUploaded={(view) => {
+                    setEditing((e) => e && { ...e, logo: view.src })
+                    set('logoId', view.id)
+                  }}
+                  onRemove={
+                    editing.logo
+                      ? () => {
+                          setEditing((e) => e && { ...e, logo: null })
+                          set('logoId', null)
+                        }
+                      : undefined
+                  }
+                />
               </Field>
             </div>
             <div className={css.editorActions}>

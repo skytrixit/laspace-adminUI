@@ -70,7 +70,23 @@ export default function Testimonials() {
                 <textarea className={ui.textarea} rows={4} value={editing.draft.quote} onChange={(e) => set('quote', e.target.value)} />
               </Field>
               <Field label="Customer Photograph" group full>
-                <Dropzone title="Drop photograph" hint="Uploads arrive in the next phase" preview={editing.photo ?? null} />
+                <Dropzone
+                  title="Drop photograph"
+                  hint="A square crop works best"
+                  preview={editing.photo ?? null}
+                  onUploaded={(view) => {
+                    setEditing((e) => e && { ...e, photo: view.src })
+                    set('photoId', view.id)
+                  }}
+                  onRemove={
+                    editing.photo
+                      ? () => {
+                          setEditing((e) => e && { ...e, photo: null })
+                          set('photoId', null)
+                        }
+                      : undefined
+                  }
+                />
               </Field>
             </div>
             <div className={css.editorActions}>

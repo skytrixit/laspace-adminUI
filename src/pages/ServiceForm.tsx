@@ -7,7 +7,7 @@ import Field from '../components/Field'
 import HeaderBar from '../components/HeaderBar'
 import Shell from '../components/Shell.module.css'
 import Toggle from '../components/Toggle'
-import type { Service, ServiceInput } from '../data/types'
+import type { MediaView, Service, ServiceInput } from '../data/types'
 import { ApiError } from '../lib/http'
 import { slugify } from '../lib/slug'
 import { useStudio } from '../store/studio'
@@ -34,21 +34,17 @@ const fromService = (s: Service): ServiceInput => ({
   isPublished: s.isPublished,
 })
 
-export default function ServiceForm() {
-  const { id } = useParams()
+function ServiceEditor({ existing }: { existing?: Service }) {
   const navigate = useNavigate()
-  const { services, loaded, saveService } = useStudio()
+  const { saveService } = useStudio()
 
-  const existing = id ? services.find((s) => String(s.id) === id) : undefined
   const [draft, setDraft] = useState<ServiceInput>(() => (existing ? fromService(existing) : blank()))
   const [slugTouched, setSlugTouched] = useState(Boolean(existing))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
+  const [image, setImage] = useState<MediaView | null>(existing?.image ?? null)
 
   /* A stale edit link — or the store has not loaded yet. */
-  if (id && loaded && !existing) return <Navigate to="/services" replace />
-  if (id && !loaded) return null
-
   const set = <K extends keyof ServiceInput>(key: K, value: ServiceInput[K]) => {
     setDraft((d) => ({ ...d, [key]: value }))
     setErrors((e) => (key in e ? { ...e, [key]: '' } : e))
@@ -119,7 +115,23 @@ export default function ServiceForm() {
           <div className={form.rail}>
             <section className={`${ui.panel} ${form.card}`}>
               <div className={`${ui.eyebrow} ${form.cardHead}`}>Image</div>
-              <Dropzone title="Drop image" hint="Uploads arrive in the next phase" preview={existing?.image?.src ?? null} />
+              <Dropzone
+                title="Drop image"
+                hint="JPG, PNG, WebP or AVIF · the site makes every size it needs"
+                preview={image?.src ?? null}
+                onUploaded={(view) => {
+                  setImage(view)
+                  set('imageId', view.id)
+                }}
+                onRemove={
+                  image
+                    ? () => {
+                        setImage(null)
+                        set('imageId', null)
+                      }
+                    : undefined
+                }
+              />
             </section>
 
             <section className={`${ui.panel} ${form.card}`}>
@@ -138,4 +150,18 @@ export default function ServiceForm() {
       </div>
     </>
   )
+}
+
+/**
+ * Resolves the record from the route, then mounts the editor keyed on it —
+ * so a deep link or a reload never initialises the form before the store
+ * has loaded. A stale edit link goes back to the list.
+ */
+export default function ServiceForm() {
+  const { id } = useParams()
+  const { services, loaded } = useStudio()
+  const existing = id ? services.find((row) => String(row.id) === id) : undefined
+  if (id && !loaded) return null
+  if (id && !existing) return <Navigate to="/services" replace />
+  return <ServiceEditor key={existing?.id ?? 'new'} existing={existing} />
 }

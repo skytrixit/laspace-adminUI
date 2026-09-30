@@ -389,3 +389,45 @@
   border-color: var(--danger-border) !important;
   color: var(--danger-glyph) !important;
 }
+
+/* Uploader states -------------------------------------------------------- */
+.dropzoneActive {
+  border-color: var(--gold);
+  background: var(--tint-active);
+}
+
+.dropzoneBusy {
+  cursor: default;
+}
+
+.dropStatus {
+  margin-top: 12px;
+  font: 300 11px/1.6 var(--sans);
+  color: var(--sand-60);
+}
+
+.progressTrack {
+  height: 2px;
+  margin-top: 10px;
+  background: var(--track);
+}
+
+.progressFill {
+  height: 2px;
+  background: var(--gold);
+  transition: width var(--ease);
+}
+
+.thumbRemove {
+  display: block;
+  margin: -4px 0 14px;
+  font: 400 10px/1 var(--sans);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sand-60);
+  transition: color var(--ease);
+}
+
+.thumbRemove:hover {
+  color: var(--danger-glyph);
+}

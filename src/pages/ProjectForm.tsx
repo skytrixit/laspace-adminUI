@@ -7,8 +7,9 @@ import Field from '../components/Field'
 import HeaderBar from '../components/HeaderBar'
 import Shell from '../components/Shell.module.css'
 import Toggle from '../components/Toggle'
-import { PROJECT_CATEGORIES, type Project, type ProjectInput } from '../data/types'
+import { PROJECT_CATEGORIES, type MediaView, type Project, type ProjectInput } from '../data/types'
 import { ApiError } from '../lib/http'
+import { movedIds } from '../lib/reorder'
 import { slugify } from '../lib/slug'
 import { useStudio } from '../store/studio'
 import form from '../styles/form.module.css'
@@ -44,19 +45,15 @@ const fromProject = (p: Project): ProjectInput => ({
   isPublished: p.isPublished,
 })
 
-export default function ProjectForm() {
-  const { id } = useParams()
+function ProjectEditor({ existing }: { existing?: Project }) {
   const navigate = useNavigate()
-  const { projects, loaded, saveProject, setProjectGallery, notify } = useStudio()
+  const { saveProject, setProjectGallery } = useStudio()
 
-  const existing = id ? projects.find((p) => String(p.id) === id) : undefined
   const [draft, setDraft] = useState<ProjectInput>(() => (existing ? fromProject(existing) : blank()))
   const [slugTouched, setSlugTouched] = useState(Boolean(existing))
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
-
-  if (id && loaded && !existing) return <Navigate to="/projects" replace />
-  if (id && !loaded) return null
+  const [cover, setCover] = useState<MediaView | null>(existing?.cover ?? null)
 
   const set = <K extends keyof ProjectInput>(key: K, value: ProjectInput[K]) => {
     setDraft((d) => ({ ...d, [key]: value }))
@@ -82,15 +79,9 @@ export default function ProjectForm() {
     }
   }
 
-  const removeImage = async (mediaId: number) => {
-    if (!existing) return
-    try {
-      await setProjectGallery(existing.id, existing.gallery.filter((g) => g.id !== mediaId).map((g) => g.id))
-      notify('Image removed')
-    } catch {
-      /* the store already toasted */
-    }
-  }
+  /* The gallery is saved as a whole, in order, every time it changes. */
+  const galleryIds = () => existing?.gallery.map((g) => g.id) ?? []
+  const saveGallery = (ids: number[]) => existing && setProjectGallery(existing.id, ids).catch(() => undefined)
 
   const text = (v: string) => v || null
 
@@ -165,18 +156,33 @@ export default function ProjectForm() {
             <section className={`${ui.panel} ${form.card}`}>
               <div className={`${ui.eyebrow} ${form.cardHead}`}>Gallery</div>
               {existing ? (
-                <div className={form.gallery}>
-                  {existing.gallery.map((image, index) => (
-                    <div key={image.id} className={form.tile} role="img" aria-label={image.alt ?? `Gallery image ${index + 1}`} style={{ backgroundImage: `url("${image.src}")` }}>
-                      <button type="button" className={form.tileX} onClick={() => removeImage(image.id)} aria-label={`Remove gallery image ${index + 1}`}>
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                  <button type="button" className={form.tileAdd} title="Uploads arrive in the next phase">
-                    + Add
-                  </button>
-                </div>
+                <>
+                  <div className={form.gallery}>
+                    {existing.gallery.map((image, index) => (
+                      <div key={image.id} className={form.tile} role="img" aria-label={image.alt ?? `Gallery image ${index + 1}`} style={{ backgroundImage: `url("${image.src}")` }}>
+                        <button type="button" className={form.tileX} onClick={() => saveGallery(galleryIds().filter((g) => g !== image.id))} aria-label={`Remove gallery image ${index + 1}`}>
+                          ✕
+                        </button>
+                        <span className={form.tileNav}>
+                          <button type="button" onClick={() => saveGallery(movedIds(existing.gallery, index, index - 1))} disabled={index === 0} aria-label={`Move gallery image ${index + 1} earlier`}>
+                            ←
+                          </button>
+                          <button type="button" onClick={() => saveGallery(movedIds(existing.gallery, index, index + 1))} disabled={index >= existing.gallery.length - 1} aria-label={`Move gallery image ${index + 1} later`}>
+                            →
+                          </button>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className={form.galleryDrop}>
+                    <Dropzone
+                      title="Drop renders"
+                      hint="Several at once · each is added to the end as it finishes"
+                      multiple
+                      onUploaded={(view) => saveGallery([...galleryIds(), view.id])}
+                    />
+                  </div>
+                </>
               ) : (
                 <p className={ui.meta}>Save the project first, then add its renders here.</p>
               )}
@@ -186,7 +192,23 @@ export default function ProjectForm() {
           <div className={form.rail}>
             <section className={`${ui.panel} ${form.card}`}>
               <div className={`${ui.eyebrow} ${form.cardHead}`}>Cover Image</div>
-              <Dropzone title="Drop cover" hint="Portrait 3:4 crops best in the projects grid" preview={existing?.cover?.src ?? null} />
+              <Dropzone
+                title="Drop cover"
+                hint="Portrait 3:4 crops best in the projects grid"
+                preview={cover?.src ?? null}
+                onUploaded={(view) => {
+                  setCover(view)
+                  set('coverId', view.id)
+                }}
+                onRemove={
+                  cover
+                    ? () => {
+                        setCover(null)
+                        set('coverId', null)
+                      }
+                    : undefined
+                }
+              />
             </section>
 
             <section className={`${ui.panel} ${form.card}`}>
@@ -208,4 +230,18 @@ export default function ProjectForm() {
       </div>
     </>
   )
+}
+
+/**
+ * Resolves the record from the route, then mounts the editor keyed on it —
+ * so a deep link or a reload never initialises the form before the store
+ * has loaded. A stale edit link goes back to the list.
+ */
+export default function ProjectForm() {
+  const { id } = useParams()
+  const { projects, loaded } = useStudio()
+  const existing = id ? projects.find((row) => String(row.id) === id) : undefined
+  if (id && !loaded) return null
+  if (id && !existing) return <Navigate to="/projects" replace />
+  return <ProjectEditor key={existing?.id ?? 'new'} existing={existing} />
 }
