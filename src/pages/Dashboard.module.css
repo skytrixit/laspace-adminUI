@@ -53,7 +53,9 @@
 /* Latest enquiries -------------------------------------------------------- */
 .leadRow {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.4fr) auto;
+  /* STATUS: two columns while the status chip is parked; the original is
+     minmax(0, 1.3fr) minmax(0, 1.4fr) auto */
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.4fr);
   align-items: center;
   gap: 16px;
   width: 100%;

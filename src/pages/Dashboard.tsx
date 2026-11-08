@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import HeaderBar from '../components/HeaderBar'
 import LeadDrawer from '../components/LeadDrawer'
-import StatusChip from '../components/StatusChip'
+// STATUS: import StatusChip from '../components/StatusChip'
 import Shell from '../components/Shell.module.css'
 import { SOURCE_LABEL, type Enquiry } from '../data/types'
 import { timeAgo } from '../lib/time'
@@ -61,7 +61,7 @@ export default function Dashboard() {
                     {SOURCE_LABEL[row.source]} · {timeAgo(row.submittedAt)}
                   </div>
                 </div>
-                <StatusChip handled={row.isHandled} />
+                {/* STATUS: <StatusChip handled={row.isHandled} /> */}
               </button>
             ))}
 

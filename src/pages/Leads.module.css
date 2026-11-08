@@ -34,9 +34,14 @@
 .head,
 .row {
   display: grid;
+  /* STATUS: five columns while the Status column is parked; the six-column
+     template below is the original. */
   grid-template-columns:
     minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1.2fr)
-    minmax(0, 0.8fr) 132px 40px;
+    minmax(0, 0.8fr) 40px;
+  /* grid-template-columns:
+    minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1.2fr)
+    minmax(0, 0.8fr) 132px 40px; */
   align-items: center;
   gap: 16px;
   padding: 16px 24px;

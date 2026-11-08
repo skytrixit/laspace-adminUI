@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+/* STATUS — the handled / new workflow is parked until it is released: the
+   filter pills, the Status column and the toggle are commented out, not
+   removed. Search for "STATUS" here, in LeadDrawer.tsx, Dashboard.tsx and
+   the two .module.css files to put it back. */
+import { useEffect, /* STATUS: useMemo, */ useState } from 'react'
 
 import HeaderBar from '../components/HeaderBar'
 import LeadDrawer from '../components/LeadDrawer'
 import Shell from '../components/Shell.module.css'
 import { SOURCE_LABEL, type Enquiry } from '../data/types'
-import { listEnquiries, setEnquiryHandled, type ListParams } from '../lib/enquiriesApi'
+import { listEnquiries, /* STATUS: setEnquiryHandled, */ type ListParams } from '../lib/enquiriesApi'
 import { formatDateTime, timeAgo } from '../lib/time'
 import { useStudio } from '../store/studio'
 import ui from '../styles/ui.module.css'
@@ -12,18 +16,20 @@ import css from './Leads.module.css'
 
 type Filter = NonNullable<ListParams['handled']>
 
+/* STATUS:
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'unhandled', label: 'New' },
   { value: 'handled', label: 'Handled' },
 ]
+*/
 
 const PAGE_SIZE = 25
 
 /** The inbox. Filtering, search and paging are the server's; this screen only asks. */
 export default function Leads() {
-  const { enquiries: summary, notify, refreshEnquiries } = useStudio()
-  const [filter, setFilter] = useState<Filter>('all')
+  const { notify } = useStudio() // STATUS: const { enquiries: summary, notify, refreshEnquiries } = useStudio()
+  const filter: Filter = 'all' // STATUS: const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
   const [debounced, setDebounced] = useState('')
   const [page, setPage] = useState(1)
@@ -60,6 +66,7 @@ export default function Leads() {
   const open = rows.find((row) => row.id === openId) ?? null
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
+  /* STATUS:
   const counts = useMemo<Record<Filter, number | null>>(
     () => ({
       all: summary?.total ?? null,
@@ -68,10 +75,12 @@ export default function Leads() {
     }),
     [summary],
   )
+  */
 
   const replaceRow = (updated: Enquiry) =>
     setRows((current) => current.map((row) => (row.id === updated.id ? updated : row)))
 
+  /* STATUS:
   const toggleHandled = async (row: Enquiry) => {
     try {
       replaceRow(await setEnquiryHandled(row.id, !row.isHandled))
@@ -81,6 +90,7 @@ export default function Leads() {
       notify('Could not update')
     }
   }
+  */
 
   const dropRow = (id: number) => {
     setRows((current) => current.filter((row) => row.id !== id))
@@ -94,6 +104,7 @@ export default function Leads() {
 
       <div className={Shell.content}>
         <div className={css.toolbar}>
+          {/* STATUS:
           <div className={ui.pillRow}>
             {FILTERS.map(({ value, label }) => (
               <button
@@ -107,6 +118,7 @@ export default function Leads() {
               </button>
             ))}
           </div>
+          */}
 
           <input
             className={css.search}
@@ -126,7 +138,7 @@ export default function Leads() {
                 <div className={css.th}>Phone</div>
                 <div className={css.th}>Service</div>
                 <div className={css.th}>Received</div>
-                <div className={css.th}>Status</div>
+                {/* STATUS: <div className={css.th}>Status</div> */}
                 <div />
               </div>
 
@@ -142,6 +154,7 @@ export default function Leads() {
                     <div className={css.secondary}>{timeAgo(row.submittedAt)}</div>
                     <div className={css.subTime}>{formatDateTime(row.submittedAt)}</div>
                   </div>
+                  {/* STATUS:
                   <button
                     type="button"
                     className={row.isHandled ? css.handledOn : css.handledOff}
@@ -150,6 +163,7 @@ export default function Leads() {
                   >
                     {row.isHandled ? 'Handled' : 'New'}
                   </button>
+                  */}
                   <button
                     type="button"
                     className={css.open}

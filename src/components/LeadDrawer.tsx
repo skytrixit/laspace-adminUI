@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { SOURCE_LABEL, type Enquiry } from '../data/types'
 import { dial } from '../lib/asset'
-import { deleteEnquiry, setEnquiryHandled } from '../lib/enquiriesApi'
+import { deleteEnquiry /* STATUS: , setEnquiryHandled */ } from '../lib/enquiriesApi'
 import { formatDateTime, timeAgo } from '../lib/time'
 import { useStudio } from '../store/studio'
 import ui from '../styles/ui.module.css'
@@ -16,7 +16,7 @@ type Props = {
   onDeleted: (id: number) => void
 }
 
-export default function LeadDrawer({ enquiry, onClose, onChange, onDeleted }: Props) {
+export default function LeadDrawer({ enquiry, onClose, /* STATUS: onChange, */ onDeleted }: Props) {
   const { notify, refreshEnquiries } = useStudio()
   const [busy, setBusy] = useState(false)
   const [armed, setArmed] = useState(false)
@@ -38,6 +38,7 @@ export default function LeadDrawer({ enquiry, onClose, onChange, onDeleted }: Pr
   /* A new enquiry in the same drawer disarms the delete. */
   useEffect(() => setArmed(false), [enquiry.id])
 
+  /* STATUS — the handled / new workflow is parked until it is released (see Leads.tsx).
   const toggleHandled = async () => {
     setBusy(true)
     try {
@@ -50,6 +51,7 @@ export default function LeadDrawer({ enquiry, onClose, onChange, onDeleted }: Pr
       setBusy(false)
     }
   }
+  */
 
   /* Two clicks to delete: the first arms the button, the second commits. */
   const remove = async () => {
@@ -116,6 +118,7 @@ export default function LeadDrawer({ enquiry, onClose, onChange, onDeleted }: Pr
           ))}
         </div>
 
+        {/* STATUS:
         <section className={css.block}>
           <div className={ui.eyebrow}>Handling</div>
           <div className={css.blockBody}>
@@ -132,6 +135,7 @@ export default function LeadDrawer({ enquiry, onClose, onChange, onDeleted }: Pr
             )}
           </div>
         </section>
+        */}
 
         <section className={css.block}>
           <div className={ui.eyebrow}>Remove</div>
