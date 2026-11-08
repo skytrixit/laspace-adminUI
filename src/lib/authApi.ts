@@ -12,7 +12,16 @@ export type AdminUser = {
   role: 'owner'
 }
 
-export type LoginResult = { token: string; expiresAt: string; user: AdminUser }
+/* Sections of the panel the API has switched on for this deployment
+   (FEATURE_* in its environment). A locked section answers 403, so the
+   panel hides it instead of showing something that cannot work. */
+export type Features = { faqs: boolean; siteSettings: boolean }
+
+/** An API that sends no features (an older build) locks nothing. */
+export const allFeatures: Features = { faqs: true, siteSettings: true }
+export const normalizeFeatures = (features?: Partial<Features>): Features => ({ ...allFeatures, ...features })
+
+export type LoginResult = { token: string; expiresAt: string; user: AdminUser; features?: Features }
 
 /** Wrong email or password — the login form shows its message verbatim. */
 export class BadCredentials extends Error {
@@ -35,6 +44,6 @@ export async function login(email: string, password: string, remember: boolean):
   }
 }
 
-export const me = () => api<{ user: AdminUser; expiresAt: string }>('/admin/auth/me')
+export const me = () => api<{ user: AdminUser; expiresAt: string; features?: Features }>('/admin/auth/me')
 
 export const logout = () => api<void>('/admin/auth/logout', { method: 'POST' })

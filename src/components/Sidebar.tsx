@@ -5,11 +5,12 @@ import { useAuth } from '../store/auth'
 import { useStudio } from '../store/studio'
 import css from './Sidebar.module.css'
 
-type Item = { to: string; label: string; end?: boolean; count?: number }
+/** `when` false drops the entry — a section the API has locked. */
+type Item = { to: string; label: string; end?: boolean; count?: number; when?: boolean }
 
 export default function Sidebar() {
   const { enquiries, services, projects, testimonials, brands, faqs } = useStudio()
-  const { signOut, user } = useAuth()
+  const { signOut, user, features } = useAuth()
 
   const items: Item[] = [
     { to: '/', label: 'Dashboard', end: true },
@@ -18,8 +19,8 @@ export default function Sidebar() {
     { to: '/projects', label: 'Projects', end: true, count: projects.length },
     { to: '/testimonials', label: 'Testimonials', count: testimonials.length },
     { to: '/brands', label: 'Brands', count: brands.length },
-    { to: '/faqs', label: 'FAQs', count: faqs.length },
-    { to: '/settings', label: 'Site Details' },
+    { to: '/faqs', label: 'FAQs', count: faqs.length, when: features.faqs },
+    { to: '/settings', label: 'Site Details', when: features.siteSettings },
     { to: '/services/new', label: 'Add Service' },
     { to: '/projects/new', label: 'Add Project' },
   ]
@@ -38,7 +39,7 @@ export default function Sidebar() {
       </div>
 
       <nav className={css.nav}>
-        {items.map((item) => (
+        {items.filter((item) => item.when !== false).map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

@@ -6,7 +6,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
-import { login, logout, me, type AdminUser } from '../lib/authApi'
+import { allFeatures, login, logout, me, normalizeFeatures, type AdminUser, type Features } from '../lib/authApi'
 import { setUnauthorizedHandler } from '../lib/http'
 import { clearToken, readToken, writeToken } from '../lib/session'
 
@@ -15,6 +15,8 @@ type Status = 'checking' | 'in' | 'out'
 type Auth = {
   status: Status
   user: AdminUser | null
+  /** What the API has switched on — fixed for the session, read at sign-in. */
+  features: Features
   signedIn: boolean
   signIn: (email: string, password: string, remember: boolean) => Promise<void>
   signOut: () => void
@@ -23,13 +25,15 @@ type Auth = {
 const AuthContext = createContext<Auth | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<{ status: Status; user: AdminUser | null }>(() =>
-    readToken() ? { status: 'checking', user: null } : { status: 'out', user: null },
+  const [state, setState] = useState<{ status: Status; user: AdminUser | null; features: Features }>(() =>
+    readToken()
+      ? { status: 'checking', user: null, features: allFeatures }
+      : { status: 'out', user: null, features: allFeatures },
   )
 
   const drop = useCallback(() => {
     clearToken()
-    setState({ status: 'out', user: null })
+    setState({ status: 'out', user: null, features: allFeatures })
   }, [])
 
   /* Verify a stored token once, on boot. */
@@ -37,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (state.status !== 'checking') return
     let cancelled = false
     me()
-      .then(({ user }) => !cancelled && setState({ status: 'in', user }))
+      .then(({ user, features }) => !cancelled && setState({ status: 'in', user, features: normalizeFeatures(features) }))
       .catch(() => !cancelled && drop())
     return () => {
       cancelled = true
@@ -51,9 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [drop])
 
   const signIn = useCallback(async (email: string, password: string, remember: boolean) => {
-    const { token, user } = await login(email, password, remember)
+    const { token, user, features } = await login(email, password, remember)
     writeToken(token, remember)
-    setState({ status: 'in', user })
+    setState({ status: 'in', user, features: normalizeFeatures(features) })
   }, [])
 
   /* Revoke server-side, then forget locally. The local part never waits on
@@ -64,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [drop])
 
   const value = useMemo<Auth>(
-    () => ({ status: state.status, user: state.user, signedIn: state.status === 'in', signIn, signOut }),
+    () => ({ status: state.status, user: state.user, features: state.features, signedIn: state.status === 'in', signIn, signOut }),
     [state, signIn, signOut],
   )
 

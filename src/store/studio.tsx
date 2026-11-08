@@ -100,7 +100,7 @@ type Api<T, I> = {
 }
 
 export function StudioProvider({ children }: { children: ReactNode }) {
-  const { status } = useAuth()
+  const { status, features } = useAuth()
   const [loaded, setLoaded] = useState(false)
   const [enquiries, setEnquiries] = useState<EnquirySummary | null>(null)
   const [services, setServices] = useState<Service[]>([])
@@ -142,7 +142,16 @@ export function StudioProvider({ children }: { children: ReactNode }) {
       return
     }
     let cancelled = false
-    Promise.all([enquirySummary(), servicesApi.list(), projectsApi.list(), testimonialsApi.list(), brandsApi.list(), faqsApi.list(), settingsApi.get()])
+    Promise.all([
+      enquirySummary(),
+      servicesApi.list(),
+      projectsApi.list(),
+      testimonialsApi.list(),
+      brandsApi.list(),
+      /* A locked section answers 403, which would fail the whole load — skip it. */
+      features.faqs ? faqsApi.list() : Promise.resolve<Faq[]>([]),
+      features.siteSettings ? settingsApi.get() : Promise.resolve<SiteSettings | null>(null),
+    ])
       .then(([e, s, p, t, b, f, st]) => {
         if (cancelled) return
         setEnquiries(e)
@@ -160,7 +169,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [status, notify])
+  }, [status, features, notify])
 
   /* One set of mutations, bound per collection. Each call goes to the API
      first; the local list only changes with what the server returned. */

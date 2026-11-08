@@ -66,6 +66,15 @@ Nothing here is real security: the guard is client-side, and the session flag
 is a boolean the browser owns. The API has to enforce access on every request
 once it exists.
 
+## Locked sections
+
+The API can switch off the FAQs and Site Details sections for a deployment
+(`FEATURE_FAQS` and `FEATURE_SITE_SETTINGS` in its environment). The login
+and `/me` responses carry a `features` object; when a flag is false the rail
+drops the entry, the store skips that fetch (the endpoint would answer 403)
+and `RequireFeature` bounces the route to the dashboard. Nothing to configure
+on this side — releasing a section is an API env change and a restart.
+
 ## Swapping in the API
 
 `StudioProvider` seeds its three `useState` arrays from `src/data/demo.ts` and

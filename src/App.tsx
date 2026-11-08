@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import AdminShell from './components/AdminShell'
 import RequireAuth from './components/RequireAuth'
+import RequireFeature from './components/RequireFeature'
 import Toast from './components/Toast'
 import AdminLogin from './pages/AdminLogin'
 import Brands from './pages/Brands'
@@ -39,8 +40,13 @@ export default function App() {
                 <Route path="/projects/:id" element={<ProjectForm />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/brands" element={<Brands />} />
-                <Route path="/faqs" element={<Faqs />} />
-                <Route path="/settings" element={<Settings />} />
+                {/* Sections the API can lock (FEATURE_* in its environment) sit behind their flag. */}
+                <Route element={<RequireFeature name="faqs" />}>
+                  <Route path="/faqs" element={<Faqs />} />
+                </Route>
+                <Route element={<RequireFeature name="siteSettings" />}>
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
               </Route>
             </Route>
 
