@@ -11,9 +11,17 @@ npm run build      # type-checks, then emits dist/
 npm run preview
 ```
 
-The panel is served under `/admin/`, set in `vite.config.ts` (`base`) and
-matched by the router `basename` in `src/App.tsx`. Both have to move together
-if it is ever mounted somewhere else.
+## Environment
+
+Copy `.env.example` to `.env` and adjust. Only `VITE_`-prefixed values reach
+browser code, and they are baked in at build time, so a change means a rebuild.
+
+| Variable | Default | What it does |
+|---|---|---|
+| `VITE_DEV_PORT` | `5174` | Dev server port |
+| `VITE_API_PROXY_TARGET` | `http://localhost:4000` | Where the dev server forwards `/api` |
+| `VITE_BASE_PATH` | `/admin/` | Where the panel is mounted. Sets Vite's `base`; the router's `basename` in `src/App.tsx` derives from it, so the two cannot drift |
+| `VITE_API_BASE` | `/api` | Where the browser sends API calls. Same-origin in production, where the API serves the panel |
 
 ## Where things live
 
@@ -39,7 +47,7 @@ to the dashboard.
 The demo account the stub recognises:
 
 ```
-studio@laspaceinteriors.com
+studio@laspaceinteriors.in
 laspace
 ```
 

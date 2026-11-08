@@ -21,7 +21,8 @@ export default function App() {
   return (
     <AuthProvider>
       <StudioProvider>
-        <BrowserRouter basename="/admin">
+        {/* The mount path from Vite's base (VITE_BASE_PATH), without its trailing slash. */}
+        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <Routes>
             <Route path="/login" element={<AdminLogin />} />
 

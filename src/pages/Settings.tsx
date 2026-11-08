@@ -61,7 +61,7 @@ export default function Settings() {
                   <input className={ui.input} value={draft.whatsappHref} onChange={(e) => set('whatsappHref', e.target.value)} placeholder="https://wa.me/919000000000" />
                 </Field>
                 <Field label="Email" error={errors.email}>
-                  <input className={ui.input} value={draft.email} onChange={(e) => set('email', e.target.value)} placeholder="hello@laspaceinteriors.com" />
+                  <input className={ui.input} value={draft.email} onChange={(e) => set('email', e.target.value)} placeholder="hello@laspaceinteriors.in" />
                 </Field>
                 <Field label="Hours" full error={errors.hours}>
                   <input className={ui.input} value={draft.hours} onChange={(e) => set('hours', e.target.value)} placeholder="Mon – Sat, 10:00 – 19:00" />

@@ -8,8 +8,10 @@ import { readToken } from './session'
    through the handler AuthProvider registers.
    ------------------------------------------------------------------------ */
 
-/* Same-origin in production; the Vite dev server proxies /api to the API. */
-const BASE = '/api'
+/* Where the browser sends API calls. Same-origin /api by default — the API
+   serves the panel at /admin — or VITE_API_BASE from .env to point elsewhere.
+   In dev the Vite server proxies /api to the API (vite.config.ts). */
+export const BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/+$/, '')
 
 export class ApiError extends Error {
   constructor(

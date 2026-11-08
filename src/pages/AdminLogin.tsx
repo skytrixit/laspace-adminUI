@@ -110,7 +110,7 @@ export default function AdminLogin() {
                 type="email"
                 value={email}
                 onChange={(event) => onEmail(event.target.value)}
-                placeholder="studio@laspaceinteriors.com"
+                placeholder="studio@laspaceinteriors.in"
                 autoComplete="username"
               />
             </label>

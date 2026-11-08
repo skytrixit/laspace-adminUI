@@ -1,5 +1,5 @@
 import type { MediaView } from '../data/types'
-import { api, ApiError } from './http'
+import { api, ApiError, BASE } from './http'
 import { readToken } from './session'
 
 /* ── Uploads ───────────────────────────────────────────────────────────────
@@ -32,7 +32,7 @@ export function uploadMedia(file: File, onProgress: (fraction: number) => void, 
         reject(new ApiError(xhr.status, p.code ?? 'error', p.message ?? `Upload failed (${xhr.status}).`, p.fields ?? {}))
       }
     }
-    xhr.open('POST', '/api/admin/media')
+    xhr.open('POST', `${BASE}/admin/media`)
     const token = readToken()
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
     xhr.send(body)
