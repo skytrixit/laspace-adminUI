@@ -1,0 +1,40 @@
+# LA Space Studio Admin — static hosting on Apache / LiteSpeed.
+# The panel is a single-page app deployed at the root of its own origin
+# (https://admin.laspaceinteriors.in). Routes are handled by the browser,
+# so every path without a file extension is served by index.html.
+
+<IfModule mod_negotiation.c>
+  # No directory listings, and no content negotiation turning /projects
+  # into /projects.<something>.
+  Options -Indexes -MultiViews
+</IfModule>
+
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Real files and directories are served as they are.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Anything else without a file extension is a client-side route.
+  # A missing file that has an extension stays a 404.
+  RewriteCond %{REQUEST_URI} !\.[A-Za-z0-9]+$
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Vite writes a content hash into every file under /assets, so they can be
+  # cached forever; a new build means new names.
+  SetEnvIf Request_URI "^/assets/" immutable_asset
+  Header set Cache-Control "public, max-age=31536000, immutable" env=immutable_asset
+
+  # The shell must be revalidated on every load so a deploy is picked up at
+  # once. <Files> matches the file finally served, so rewritten routes too.
+  <Files "index.html">
+    Header set Cache-Control "no-cache"
+  </Files>
+</IfModule>
